@@ -9,13 +9,33 @@
 
 var port = 6000;
 var http = require('http');
+var url = require('url');
+var qs = require('querystring');
+
 
 var server = http.createServer(function (req, res) {
+    var body = '';
+
     console.log('>>> New Request:');
-    console.dir(req);
-    res.end('OKAY');
+
+    // Read data fragments
+    req.on('data', function (data) {
+        body += data;
+    });
+
+    // Complete data reading
+    req.on('end',function () {
+        var post = qs.parse(body);
+        console.dir(post);
+
+        // Send response
+        res.writeHead(200);
+        res.end('UPDATED');
+    });
 });
 
+
 server.listen(port, function () {
+    console.log('>>> Fake-server simulating the JSP server');
     console.log('>>> Server listening at port ' + port);
 });
