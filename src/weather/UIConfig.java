@@ -1,15 +1,17 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/*!
+ * Grupo de Desarrollo de Software Calumet
+ * Weather | Application | Config Frame
+ * Romel Pérez @prhonedev, 2014
  */
 
 package weather;
 
-/**
- *
- * @author romel
- */
 public class UIConfig {
+    
+    public static void main () {
+        
+        // None
+        
+    }
     
 }

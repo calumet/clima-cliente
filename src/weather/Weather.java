@@ -15,12 +15,15 @@ import java.net.URL;
 
 public class Weather {
 
+    
+    public static UIMain uimain;
+    
 
     // Main Controller
     public static void main(String[] args) {
 
         Data.sync();
-        UIMain.start();
+        uimain = new UIMain();
         
     }
     
@@ -42,7 +45,7 @@ public class Weather {
     }
 
 
-    // Search for data in station folder
+    // Search for new data in station folder
     public static String search() {
 
         return "";

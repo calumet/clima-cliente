@@ -30,7 +30,7 @@ var server = http.createServer(function (req, res) {
 
         // Send response
         res.writeHead(200);
-        res.end('UPDATED');
+        res.end('STATION DATA UPDATED');
     });
 });
 

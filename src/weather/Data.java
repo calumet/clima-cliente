@@ -48,7 +48,7 @@ public class Data {
     }
 
 
-    // Save config
+    // Save modified config
     public static boolean save(String parameters) {
         return true;
     }
