@@ -16,9 +16,11 @@ public class Data {
     public static String server = "";
     public static String station = "";
     public static String stationFolder = "";
-    public static String title = "";
+    public static String uimain_title = "";
+    public static String uiconfig_title = "";
     public static String favicon = "";
     public static String uis = "";
+    public static String civil = "";
     public static String calumet = "";
     
     
@@ -34,9 +36,11 @@ public class Data {
             	server = res.getProperty("SERVER");
             	station = res.getProperty("STATION");
             	stationFolder = res.getProperty("STATIONFOLDER");
-            	title = res.getProperty("TITLE");
+            	uimain_title = res.getProperty("UI_MAIN_TITLE");
+            	uiconfig_title = res.getProperty("UI_CONFIG_TITLE");
             	favicon = res.getProperty("FAVICON");
             	uis = res.getProperty("UIS");
+                civil = res.getProperty("CIVIL");
             	calumet = res.getProperty("CALUMET");
             }
             return true;
@@ -48,8 +52,8 @@ public class Data {
     }
 
 
-    // Save modified config
-    public static boolean save(String parameters) {
+    // Update modified config
+    public static boolean update(String parameters) {
         return true;
     }
 

@@ -17,35 +17,32 @@ public class Weather {
 
     
     public static UIMain uimain;
+    public static UIConfig uiconfig;
     
 
-    // Main Controller
+    // Controlador principal
     public static void main(String[] args) {
 
+        // Sincronizar datos del usuario
         Data.sync();
+        
+        // Iniciar interfaz principal
         uimain = new UIMain();
         
     }
     
     
-    // Begin synchronization with server
-    public static void synchronize(boolean start) {
+    // Revisar qué datos no han sido sincronizados si se encuentran, procesarlos y enviarlos
+    public static void synchronize() {
         
-        if (start) {
-            
-            String response = send("key=" + Data.key + "&station=" + Data.station);
-            System.out.println(response);
-            
-        } else {
-            
-            // stop
-            
-        }
-        
+        //String response = send("key=" + Data.key + "&station=" + Data.station);
+        //System.out.println(response);
+
     }
 
 
-    // Search for new data in station folder
+    // Buscar datos no enviados en la carpeta del servidor
+    // Retorna los datos encontrados
     public static String search() {
 
         return "";
@@ -54,6 +51,8 @@ public class Weather {
 
     
     // Send data to server
+    // @parameters son los datos a enviar
+    // Retorna respuesta del servidor o mensaje de error
     public static String send(String parameters) {
 
         URL url;
@@ -61,7 +60,7 @@ public class Weather {
 
         try {
             
-            // Create connection
+            // Crear conexión
             url = new URL(Data.server);
             connection = (HttpURLConnection) url.openConnection();
 
@@ -75,14 +74,14 @@ public class Weather {
             connection.setDoOutput(true);
 
 
-            // Send request
+            // Enviar datos
             DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
             wr.writeBytes(parameters);
             wr.flush();
             wr.close();
 
 
-            // Get response
+            // Recibir respuesta
             String line;
             int resCode = connection.getResponseCode();
             BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -96,11 +95,12 @@ public class Weather {
 
         } catch (IOException e) {
 
-            // There is no answer
+            // En caso de no haber respuesta
             return null;
 
         } finally {
 
+            // Terminar conexión
             if (connection != null) {
                 connection.disconnect();
             }

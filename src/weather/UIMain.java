@@ -30,12 +30,16 @@ public final class UIMain extends JFrame {
     
     // Componentes
     public static PImage IMG_Calumet;
+    public static PImage IMG_Civil;
     public static PImage IMG_UIS;
     public static JLabel TXT_Info;
     public static JLabel TXT_State;
     public static JTextArea TXA_State;
+    public static JScrollPane TXA_State_Scroll;
     public static JLabel TXT_Data;
     public static JTextArea TXA_Data;
+    public static JScrollPane TXA_Data_Scroll;
+    public static JLabel TXT_Calumet;
     public static JButton BTN_Config;
     public static JButton BTN_Sync;
     
@@ -46,7 +50,7 @@ public final class UIMain extends JFrame {
         Toolkit tools = Toolkit.getDefaultToolkit();
         
         // Principal
-        this.setTitle(Data.title);
+        this.setTitle(Data.uimain_title);
         this.setIconImage(Toolkit.getDefaultToolkit().getImage(Data.favicon));
         this.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         this.setLayout(null);
@@ -61,44 +65,61 @@ public final class UIMain extends JFrame {
     public void components() {
 
         // Iniciando
-        IMG_UIS = new PImage(Data.uis, 72, 100);
-        IMG_Calumet = new PImage(Data.calumet, 100, 100);
-        TXT_Info = new JLabel("<html><b>Grupo de Desarrollo de Software Calumet de la Universidad Industrial de Santander</b>"
-                            + "<br>Esta aplicaci&oacute;n observa los datos obtenidos constantemente por la estaci&oacute;n meteorol&oacute;gica"
-                            + "<br>Estos son enviados a un servidor para su posterior procesamiento"
+        IMG_UIS = new PImage(Data.uis, 179, 90);
+        IMG_Civil = new PImage(Data.civil, 100, 82);
+        IMG_Calumet = new PImage(Data.calumet, 30, 30);
+        TXT_Info = new JLabel("<html><b>Escuela de Ingeniería Civil de la Universidad Industrial de Santander</b>"
+                            + "<br>Esta aplicaci&oacute;n observa los datos obtenidos constantemente por la estaci&oacute;n meteorol&oacute;gica."
+                            + "<br>Estos son enviados a un servidor para su posterior procesamiento y publicaci&oacute;n web."
                             + "</html>");
-        TXT_State = new JLabel("Estado del Servidor");
-        TXA_State = new JTextArea();
+        TXT_State = new JLabel("Estado Aplicación - Servidor");
+        TXA_State = new JTextArea("La aplicación se encuentra inactiva por parte del usuario.");
         TXT_Data = new JLabel("Últimos Datos Enviados");
-        TXA_Data = new JTextArea();
+        TXA_Data = new JTextArea("Hasta el momento no se han enviado datos en esta sessión.");
+        TXT_Calumet = new JLabel("Desarrollado por el Grupo Calumet");
         BTN_Config = new JButton("Configurar");
         BTN_Sync = new JButton("Sincronizar");
         
         
         // Configurando
-        IMG_UIS.setLocation(20, 20);
-        IMG_Calumet.setLocation(112, 20);
-        TXT_Info.setBounds(232, 20, 740, 100);
+        IMG_Civil.setLocation(20, 20);
+        TXT_Info.setBounds(140, 20, 740, 90);
         TXT_Info.setFont(new Font("Serif", Font.PLAIN, 12));
+        IMG_UIS.setLocation(780, 20);
         
         TXT_State.setBounds(20, 150, 600, 20);
-        TXA_State.setBounds(20, 180, 940, 40);
+        
+        TXA_State.setEditable(false);
+        TXA_State.setLineWrap(true);
+        TXA_State.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        TXA_State_Scroll = new JScrollPane (TXA_State, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        TXA_State_Scroll.setBounds(20, 180, 940, 40);
         
         TXT_Data.setBounds(20, 250, 940, 20);
-        TXA_Data.setBounds(20, 280, 940, 160);
         
-        BTN_Config.setBounds(20, 520, 200, 30);
-        BTN_Sync.setBounds(780, 520, 200, 30);
+        TXA_Data.setEditable(false);
+        TXA_Data.setLineWrap(true);
+        TXA_Data.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        TXA_Data_Scroll = new JScrollPane (TXA_Data, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        TXA_Data_Scroll.setBounds(20, 280, 940, 200);
+        
+        IMG_Calumet.setLocation(20, 520);
+        TXT_Calumet.setBounds(60, 520, 300, 30);
+        
+        BTN_Config.setBounds(540, 520, 200, 30);
+        BTN_Sync.setBounds(760, 520, 200, 30);
         
         
         // Agregando componentes a la ventana
-        this.getContentPane().add(IMG_Calumet);
         this.getContentPane().add(IMG_UIS);
+        this.getContentPane().add(IMG_Civil);
+        this.getContentPane().add(IMG_Calumet);
         this.getContentPane().add(TXT_Info);
         this.getContentPane().add(TXT_State);
-        this.getContentPane().add(TXA_State);
+        this.getContentPane().add(TXA_State_Scroll);
         this.getContentPane().add(TXT_Data);
-        this.getContentPane().add(TXA_Data);
+        this.getContentPane().add(TXA_Data_Scroll);
+        this.getContentPane().add(TXT_Calumet);
         this.getContentPane().add(BTN_Config);
         this.getContentPane().add(BTN_Sync);
 
@@ -108,13 +129,19 @@ public final class UIMain extends JFrame {
     // Interacciones
     public void controllers() {
         
-        /*IButton_1.setText("Synchronize");
-        IButton_1.setBounds(20, 20, 100, 30);
-        IButton_1.addActionListener(new java.awt.event.ActionListener() {
+        // Configuración
+        BTN_Config.addActionListener(new java.awt.event.ActionListener() {
             @Override public void actionPerformed(java.awt.event.ActionEvent evt) {
-                JOptionPane.showMessageDialog(null, "This is a normal message to show on here!", "Title", JOptionPane.INFORMATION_MESSAGE);
+                Weather.uiconfig = new UIConfig();
             }}
-        );*/
+        );
+        
+        // Sincronizar datos
+        BTN_Sync.addActionListener(new java.awt.event.ActionListener() {
+            @Override public void actionPerformed(java.awt.event.ActionEvent evt) {
+                JOptionPane.showMessageDialog(null, "Próximamente estará disponible la opción de sincronizar datos con el servidor, espéralo.", "Sincronización", JOptionPane.INFORMATION_MESSAGE);
+            }}
+        );
         
     }
     
