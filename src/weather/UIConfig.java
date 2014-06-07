@@ -14,31 +14,25 @@ public final class UIConfig extends JDialog {
     
     // Initialización
     public UIConfig() {
-        
         configure();
         components();
         controllers();
-        
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override public void run() {
-                setVisible(true);
-            }
-        });
-        
     }
-    
     
     
     // Componentes
     public static JLabel TXT_Station;
     public static JLabel TXT_Key;
     public static JLabel TXT_Station_Folder;
-    public static JLabel TXT_Server;
     public static JTextField INP_Station;
     public static JTextField INP_Key;
     public static JTextField INP_Station_Folder;
-    public static JTextField INP_Server;
     public static JButton BTN_Update;
+    
+    
+    public void render() {
+        setVisible(true);
+    }
     
     
     // Configurar ventana
@@ -52,8 +46,8 @@ public final class UIConfig extends JDialog {
         this.setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
         this.setLayout(null);
         this.setBounds((int) tools.getScreenSize().getWidth() / 2 - 300,
-                       (int) tools.getScreenSize().getHeight() / 2 - 145,
-                       600, 290);
+                       (int) tools.getScreenSize().getHeight() / 2 - 125,
+                       600, 250);
         
     }
 
@@ -77,24 +71,17 @@ public final class UIConfig extends JDialog {
         INP_Station_Folder = new JTextField(Data.stationFolder);
         INP_Station_Folder.setBounds(200, 110, 375, 25);
         
-        TXT_Server = new JLabel("Servidor");
-        TXT_Server.setBounds(20, 155, 160, 25);
-        INP_Server = new JTextField(Data.server);
-        INP_Server.setBounds(200, 155, 375, 25);
-        
         BTN_Update = new JButton("Actualizar");
-        BTN_Update.setBounds(452, 210, 120, 30);
+        BTN_Update.setBounds(452, 155, 120, 30);
         
         
         // Agregando componentes a la ventana
         this.getContentPane().add(TXT_Station);
         this.getContentPane().add(TXT_Key);
         this.getContentPane().add(TXT_Station_Folder);
-        this.getContentPane().add(TXT_Server);
         this.getContentPane().add(INP_Station);
         this.getContentPane().add(INP_Key);
         this.getContentPane().add(INP_Station_Folder);
-        this.getContentPane().add(INP_Server);
         this.getContentPane().add(BTN_Update);
 
     }
@@ -106,7 +93,19 @@ public final class UIConfig extends JDialog {
         // Actualizar datos modificados
         BTN_Update.addActionListener(new java.awt.event.ActionListener() {
             @Override public void actionPerformed(java.awt.event.ActionEvent evt) {
-                JOptionPane.showMessageDialog(null, "Todavía no está disponible la funcionalidad de actualizar la configuración.", "Actualización", JOptionPane.WARNING_MESSAGE);
+
+                String p = "STATION:" + INP_Station.getText();
+                p += ",KEY:" + INP_Key.getText();
+                p += ",STATION_FOLDER:" + INP_Station_Folder.getText();
+                boolean updated = Data.update(p);
+                
+                if (updated) {
+                    JOptionPane.showMessageDialog(null, "Se han actualizado correctamente los datos de la estación.", "Actualización", JOptionPane.INFORMATION_MESSAGE);
+                    setVisible(false);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Ha ocurrido un error en la actualización. Revise los datos e intente de nuevo.", "Actualización", JOptionPane.ERROR_MESSAGE);
+                }
+            
             }}
         );
         

@@ -73,9 +73,9 @@ public final class UIMain extends JFrame {
                             + "<br>Estos son enviados a un servidor para su posterior procesamiento y publicaci&oacute;n web."
                             + "</html>");
         TXT_State = new JLabel("Estado Aplicación - Servidor");
-        TXA_State = new JTextArea("La aplicación se encuentra inactiva por parte del usuario.");
+        TXA_State = new JTextArea("La aplicación no ha sincronizado datos hasta el momento.");
         TXT_Data = new JLabel("Últimos Datos Enviados");
-        TXA_Data = new JTextArea("Hasta el momento no se han enviado datos en esta sessión.");
+        TXA_Data = new JTextArea("No se han enviado datos en esta sessión hasta el momento.");
         TXT_Calumet = new JLabel("Desarrollado por el Grupo Calumet");
         BTN_Config = new JButton("Configurar");
         BTN_Sync = new JButton("Sincronizar");
@@ -129,17 +129,17 @@ public final class UIMain extends JFrame {
     // Interacciones
     public void controllers() {
         
-        // Configuración
+        // Mostrar ventana de configuración
         BTN_Config.addActionListener(new java.awt.event.ActionListener() {
             @Override public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Weather.uiconfig = new UIConfig();
+                Weather.uiconfig.render();
             }}
         );
         
         // Sincronizar datos
         BTN_Sync.addActionListener(new java.awt.event.ActionListener() {
             @Override public void actionPerformed(java.awt.event.ActionEvent evt) {
-                JOptionPane.showMessageDialog(null, "Próximamente estará disponible la opción de sincronizar datos con el servidor, espéralo.", "Sincronización", JOptionPane.INFORMATION_MESSAGE);
+                Weather.synchronize();
             }}
         );
         
