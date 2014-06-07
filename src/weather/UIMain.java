@@ -7,6 +7,9 @@
 package weather;
 
 import java.awt.*;
+import java.io.UnsupportedEncodingException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 public final class UIMain extends JFrame {
@@ -53,6 +56,7 @@ public final class UIMain extends JFrame {
         this.setTitle(Data.uimain_title);
         this.setIconImage(Toolkit.getDefaultToolkit().getImage(Data.favicon));
         this.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        this.setResizable(false);
         this.setLayout(null);
         this.setBounds((int) tools.getScreenSize().getWidth() / 2 - 500,
                        (int) tools.getScreenSize().getHeight() / 2 - 300,
@@ -139,7 +143,11 @@ public final class UIMain extends JFrame {
         // Sincronizar datos
         BTN_Sync.addActionListener(new java.awt.event.ActionListener() {
             @Override public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Weather.synchronize();
+                try {
+                    Weather.synchronize();
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(UIMain.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }}
         );
         

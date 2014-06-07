@@ -44,6 +44,7 @@ public final class UIConfig extends JDialog {
         this.setTitle(Data.uiconfig_title);
         this.setIconImage(Toolkit.getDefaultToolkit().getImage(Data.favicon));
         this.setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
+        this.setResizable(false);
         this.setLayout(null);
         this.setBounds((int) tools.getScreenSize().getWidth() / 2 - 300,
                        (int) tools.getScreenSize().getHeight() / 2 - 125,
@@ -94,10 +95,10 @@ public final class UIConfig extends JDialog {
         BTN_Update.addActionListener(new java.awt.event.ActionListener() {
             @Override public void actionPerformed(java.awt.event.ActionEvent evt) {
 
-                String p = "STATION:" + INP_Station.getText();
-                p += ",KEY:" + INP_Key.getText();
-                p += ",STATION_FOLDER:" + INP_Station_Folder.getText();
-                boolean updated = Data.update(p);
+                String data = "STATION:" + INP_Station.getText();
+                data += ",KEY:" + INP_Key.getText();
+                data += ",STATION_FOLDER:" + INP_Station_Folder.getText();
+                boolean updated = Data.update(data);
                 
                 if (updated) {
                     JOptionPane.showMessageDialog(null, "Se han actualizado correctamente los datos de la estación.", "Actualización", JOptionPane.INFORMATION_MESSAGE);

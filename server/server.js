@@ -26,11 +26,12 @@ var server = http.createServer(function (req, res) {
     // Complete data reading
     req.on('end',function () {
         var post = qs.parse(body);
-        console.dir(post);
+        var data = JSON.parse(post.data);
+        console.dir(data);
 
         // Send response
         res.writeHead(200);
-        res.end('STATION DATA UPDATED');
+        res.end('UPDATED');
     });
 });
 

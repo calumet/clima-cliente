@@ -45,27 +45,31 @@ public class Weather {
         Calendar calendario = new GregorianCalendar();
         String tiempo = calendario.get(Calendar.HOUR_OF_DAY) + ":" + calendario.get(Calendar.MINUTE) + ":" + calendario.get(Calendar.SECOND);
         
-        // Test
-        //System.out.println(search());
-        
         // Buscar y procesar nuevos datos
-        String answer;
         int updates = 0;
-        String newData = search();
+        String answer, list = "", newData = search();
         while (!newData.equals("NO_DATA") && !newData.equals("ERROR_READ")) {
             
             String dataToSend = "";
             String[] dataParts = newData.split(",");
+            
             dataToSend += "{";
             dataToSend += "\"" + Data.dataProps[0] + "\":\"" + dataParts[0] + "\"";
+            list = Data.dataProps[0] + ": " + dataParts[0] + "\r\n";
             for (int d = 1; d < dataParts.length; d++) {
                 dataToSend += ",\"" + Data.dataProps[d] + "\":\"" + dataParts[d] + "\"";
+                list += Data.dataProps[d] + ": " + dataParts[d] + "\r\n";
             }
             dataToSend += "}";
             
-            answer = send(dataToSend);
-            updates++;
-            newData = search();
+            answer = send(dataParts[0] + "-"+ dataParts[1], dataToSend);
+            if (answer.equals("ERROR")) {
+                JOptionPane.showMessageDialog(null, "Ha ocurrido un error conectandose al servidor. Intente de nuevo en unos momentos.", "Servidor", JOptionPane.ERROR_MESSAGE);
+                return;
+            } else {
+                updates++;
+                newData = search();
+            }
             
         }
         
@@ -85,9 +89,6 @@ public class Weather {
             } else {
                 UIMain.TXA_State.setText("Han sido actualizados " + updates + " nuevos registros de datos en el servidor a las " + tiempo + ".");
             }
-            // MOSTRAR DE FORMA AMIGABLE LOS DATOS
-            // ESTO PARA COMPROVAR Y REVISAR LOS ÚLTIMOS DATOS ENVIADOS AL SERVIDOR
-            String list = "";
             UIMain.TXA_Data.setText(list);
         }
         
@@ -149,7 +150,7 @@ public class Weather {
     // Send data to server
     // @parameters son los datos a enviar
     // Retorna respuesta del servidor o mensaje de error
-    public static String send(String parameters) {
+    public static String send(String datetime, String parameters) {
 
         URL url;
         HttpURLConnection connection = null;
@@ -179,7 +180,8 @@ public class Weather {
             wr.close();
             
             
-            // ACTUALIZAR LOS DATOS DEL ÚLTIMO REGISTRO EN Data.lastSent EN CONFIG FILE
+            // Actualizar registro de último dato enviado
+            Data.update("DATA_LAST:" + datetime);
 
 
             // Recibir respuesta
