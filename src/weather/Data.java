@@ -15,8 +15,8 @@ public class Data {
     
     // Configuración de funcionalidad
     public static int updateTime = 1000 * 60 * 5;
-    public static String serverAdd = "/weather/addData";
-    public static String serverGetLast = "/weather/getDataLast";
+    public static String serverAdd = "/eisi/Clima/addData.jsp";
+    public static String serverGetLast = "/eisi/Clima/getLast.jsp";
     
     // Configuración de usuario
     public static String key = "";
@@ -149,7 +149,7 @@ public class Data {
             fileprops.setProperty("STATION", station);
             fileprops.setProperty("STATION_FOLDER", stationFolder);
             fileprops.setProperty("SERVER", server);
-            fileprops.setProperty("LAST", last);
+            fileprops.setProperty("LAST", last == null ? "" : last);
             
             // Procesar nuevos datos y guardarlos
             String[] properties = parameters.split(",");

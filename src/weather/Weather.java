@@ -85,7 +85,7 @@ public class Weather {
                     break;
                 case "ERROR":
                     JOptionPane.showMessageDialog(null, "No se ha configurado el último dato enviado y ocurrió un error " +
-                        "conectándose al servidor. Intente de nuevo. Si persiste el problema, contacte el administrador para configurarlo.", "Configuración", JOptionPane.ERROR_MESSAGE);
+                        "conectándose al servidor.\r\nIntente de nuevo. Si persiste el problema, contacte el administrador para configurarlo.", "Configuración", JOptionPane.ERROR_MESSAGE);
                     return;
                 default:
                     Data.update("LAST=" + lastRegisterSent);
@@ -129,7 +129,6 @@ public class Weather {
                 
                 // Actualizar último registro enviado
                 Data.update("LAST=" + datetime);
-                System.out.println("Envío: del " + datetime + " respuesta del servidor fue: " + answer);
                 
                 // Sumar total enviados y volver a buscar
                 updates++;
@@ -138,7 +137,7 @@ public class Weather {
             } else {
                 
                 // Mostrar mensaje de error con el servidor
-                JOptionPane.showMessageDialog(null, "Ha ocurrido un error conectandose al servidor. " +
+                JOptionPane.showMessageDialog(null, "Ha ocurrido un error conectandose al servidor.\r\n" +
                     "Intente de nuevo en unos momentos. Si persiste el problema, revise la configuración.", "Servidor", JOptionPane.ERROR_MESSAGE);
                 return;
                 
@@ -181,15 +180,14 @@ public class Weather {
     // @Data.last es utilizado
     public static String search(boolean whatever) {
         
-        // En caso de no tener configurado Data.last, el cual es validado en synchronize()
-        if (Data.last == null || (Data.last != null && Data.last.split("-").length != 5)) {
-            return "ERROR_CONFIG";
-        }
-        
         // Procesar datetime de últimos datos enviados
-        String[] lastDateTime = Data.last.split("-");
-        String lastDate = lastDateTime[0] + "/" + lastDateTime[1] + "/" + lastDateTime[2];  // DD/MM/YY
-        String lastTime = lastDateTime[3] + ":" + lastDateTime[4];  // HH:MM
+        String[] lastDateTime = {};
+        String lastDate = "", lastTime = "";
+        if (!whatever) {
+            lastDateTime = Data.last.split("-");
+            lastDate = lastDateTime[0] + "/" + lastDateTime[1] + "/" + lastDateTime[2];  // DD/MM/YY
+            lastTime = lastDateTime[3] + ":" + lastDateTime[4];  // HH:MM
+        }
 
         // Leer archivo de datos
         BufferedReader lector = null;
@@ -243,11 +241,23 @@ public class Weather {
     // Retorna respuesta del servidor ó mensaje de error
     public static String sendRegister(String datetime, String parameters) {
         
-        String url = Data.server + Data.serverAdd;
-        String method = "POST";
-        String query = "key=" + Data.key + "&station=" + Data.station + "&datetime=" + datetime + "&data=" + parameters;
-        
-        return request(url, method, query);
+        try {
+            
+            // Crear query codificado
+            String url = Data.server + Data.serverAdd;
+            String method = "POST";
+            String query = "key=" + Data.key + "&station=" + Data.station + "&datetime=" + datetime +
+                           "&data=" + URLEncoder.encode(parameters, "UTF-8");
+
+            // Requerir
+            return request(url, method, query);
+            
+        } catch(UnsupportedEncodingException e) {
+            
+            // Error de codificación
+            return "ERROR";
+            
+        }
         
     }
     
@@ -293,7 +303,7 @@ public class Weather {
 
             // Enviar datos
             DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-            wr.writeBytes(URLEncoder.encode(parameters, "UTF-8"));
+            wr.writeBytes(parameters);
             wr.flush();
             wr.close();
             
@@ -308,7 +318,9 @@ public class Weather {
                 response.append('\r');
             }
             rd.close();
-            return response.toString();
+            String answer = response.toString().trim();
+            System.out.println("request() - " + address + " " + method + " - " + answer);
+            return answer;
 
         } catch (IOException e) {
 

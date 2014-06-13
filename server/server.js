@@ -10,58 +10,71 @@ var port = 6000;
 var http = require('http');
 var url = require('url');
 var qs = require('querystring');
-var key = 'A1B2C3D4E5F6G7';
-var stations = {
-    'S1': '2-12-13-12-40',
-    'S2': '2-12-13-12-45',
-    'S3': 'NONE'
-};
 
 
-var processor = function (config, data) {
+var app = {
 
-    var req = this.req;
-    var res = this.res;
+    stations: {
+        'S1': '2-12-13-12-40',
+        'S2': 'NONE'
+    },
 
-    console.log('>>> ' + config.method + ' ' + config.url.pathname);
-
-    var unauthorized = function (sentKey) {
-        if (key !== sentKey) {
-            res.writeHead(500);
-            res.end('NOT AUTHORIZED');
+    authorized: function (key) {
+        if (key !== 'A1B2C3D4E5F6G7') {
+            this.res.writeHead(200);
+            this.res.setEncoding('utf8');
+            this.res.end('ERROR');
+            console.log(key);
             console.log('NOT AUTHORIZED');
+            return false;
         }
+        return true;
+    },
+
+    receive: function () {
+        var req = this.req;
+        var res = this.res;
+        var config = this.config;
+        var data = this.data;
+
+        console.log('>>> ' + config.method + ' ' + config.url.pathname);
+
+        if (config.method === 'GET') {
+
+            console.dir(config.url.query);
+            if (!app.authorized.call(this, config.url.query.key)) return;
+
+            if (config.url.pathname === '/eisi/Clima/getLast.jsp') {
+                var answer = stations[config.url.query.station] || 'ERROR';
+                res.writeHead(200);
+                res.setEncoding('utf8');
+                res.end(answer);
+                console.log(answer);
+                // DD-MM-YY-hh-mm | NONE | ERROR
+                return;
+            }
+
+        } else if (config.method === 'POST') {
+
+            console.dir(data);
+            if (!app.authorized.call(this, data.key)) return;
+
+            if (config.url.pathname === '/eisi/Clima/addData.jsp') {
+                res.writeHead(200);
+                res.setEncoding('utf8');
+                res.end('PROCESSED');
+                console.log('PROCESSED');
+                // PROCESSED | ERROR
+                return;
+            }
+
+        }
+
+        res.writeHead(404);
+        res.setEncoding('utf8');
+        res.end('NOT FOUND');
+        console.log('NOT FOUND');
     }
-
-    if (config.method === 'GET') {
-
-        unauthorized(config.url.query.key);
-        console.dir(config.url.query);
-
-        if (config.url.pathname === '/weather/getDataLast') {
-            var answer = stations[config.url.query.station] || 'ERROR';
-            res.writeHead(200);
-            res.end(answer);
-            console.log(answer);
-            // ERROR | NONE | <<DATA>>
-        }
-
-    } else if (config.method === 'POST') {
-
-        unauthorized(data.key);
-        console.dir(data);
-
-        if (config.url.pathname === '/weather/addData') {
-            res.writeHead(200);
-            res.end('PROCESSED');
-            console.log('PROCESSED');
-            // PROCESSED | ERROR
-        }
-
-    }
-
-    res.writeHead(404);
-    res.end('NOT FOUND');
 
 };
 
@@ -76,13 +89,17 @@ var server = http.createServer(function (req, res) {
     
     req.on('end',function () {
         var post = qs.parse(body);
-        var data = post && post.data ? JSON.parse(post.data) : '';
-        var config = {
-            method: req.method.toUpperCase(),
-            url: url.parse(req.url, true)
-        };
-        post.data = data;
-        processor.call({req: req, res: res}, config, post);
+        post.data = post && post.data ? JSON.parse(post.data) : undefined;
+        data = '';
+        app.receive.call({
+            req: req,
+            res: res,
+            config: {
+                method: req.method.toUpperCase(),
+                url: url.parse(req.url, true)
+            },
+            data: post
+        });
     });
     
 });
