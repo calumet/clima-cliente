@@ -12,16 +12,20 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.JOptionPane;
 
 public class Weather {
 
     
-    public static UIMain uimain;
-    public static UIConfig uiconfig;
+    // Objetos principales
+    public static UIMain uimain = null;
+    public static UIConfig uiconfig = null;
+    public static Timer update = null;
     
 
-    // Controlador principal
+    // Controlador principal de aplicación
     public static void main(String[] args) {
 
         // Sincronizar datos del usuario
@@ -29,67 +33,143 @@ public class Weather {
         Data.sync();
         
         // Iniciar interfaces
-        uimain = new UIMain();
-        uiconfig = new UIConfig();
+        uimain = new UIMain();  // Iniciar y mostrar
+        uiconfig = new UIConfig();  // Sólo iniciar
         
-        // INICIAR SINCRONIZACIÓN
-        // REPETIR CADA Data.updateTime SEGUNDOS
+        // Iniciar intervalo de sincronización
+        interval(true);
+        
+    }
+    
+    
+    // Intervalo de tiempo para sincronizar
+    // @start si comienza a sincronizar o la cancela
+    public static void interval(boolean start) {
+        
+        // Iniciar sincronizaciones cada intervalo
+        if (start) {
+            update = new Timer();
+            update.schedule(new TimerTask() {
+                @Override public void run() {
+                    Weather.synchronize();
+                }
+            }, 3000, Data.updateTime);
+        }
+        // Detener sincronizaciones si ha sido iniciado
+        else {
+            if (update != null) {
+                update.cancel();
+            }
+        }
         
     }
     
     
     // Revisar qué datos no han sido sincronizados si se encuentran, procesarlos y enviarlos
-    public static void synchronize() throws UnsupportedEncodingException {
+    public static void synchronize() {
         
         // Tiempo en el momento de sincronizar
         Calendar calendario = new GregorianCalendar();
-        String tiempo = calendario.get(Calendar.HOUR_OF_DAY) + ":" + calendario.get(Calendar.MINUTE) + ":" + calendario.get(Calendar.SECOND);
+        String momento = calendario.get(Calendar.HOUR_OF_DAY) + ":" + calendario.get(Calendar.MINUTE) + ":" + calendario.get(Calendar.SECOND);
         
-        // Buscar y procesar nuevos datos
+        
+        // Buscar datos de acuerdo al datetime del último registro enviado
+        String newData;
+        if (Data.last == null || (Data.last != null && Data.last.split("-").length != 5)) {
+            
+            // No está configurado Data.last, configurarlo
+            String lastRegisterSent = askLast();
+            switch (lastRegisterSent) {
+                case "NONE":
+                    newData = search(true);
+                    break;
+                case "ERROR":
+                    JOptionPane.showMessageDialog(null, "No se ha configurado el último dato enviado y ocurrió un error " +
+                        "conectándose al servidor. Intente de nuevo. Si persiste el problema, contacte el administrador para configurarlo.", "Configuración", JOptionPane.ERROR_MESSAGE);
+                    return;
+                default:
+                    Data.update("LAST=" + lastRegisterSent);
+                    newData = search(false);
+                    break;
+            }
+            
+        } else {
+            
+            // Está configurado Data.last, buscar de acuerdo a su valor
+            newData = search(false);
+            
+        }
+        
+        
+        // Procesar nuevos datos
+        String answer;
         int updates = 0;
-        String answer, list = "", newData = search();
-        while (!newData.equals("NO_DATA") && !newData.equals("ERROR_READ")) {
+        String log = "";
+        while (!newData.equals("ERROR_READ") && !newData.equals("INFO_NODATA")) {
             
             String dataToSend = "";
             String[] dataParts = newData.split(",");
+            String datetime = dataParts[0] + "-"+ dataParts[1];
             
+            
+            // Crear strings de datos para enviar y mostrar en el log
             dataToSend += "{";
             dataToSend += "\"" + Data.dataProps[0] + "\":\"" + dataParts[0] + "\"";
-            list = Data.dataProps[0] + ": " + dataParts[0] + "\r\n";
+            log = Data.dataProps[0] + ": " + dataParts[0] + "\r\n";
             for (int d = 1; d < dataParts.length; d++) {
                 dataToSend += ",\"" + Data.dataProps[d] + "\":\"" + dataParts[d] + "\"";
-                list += Data.dataProps[d] + ": " + dataParts[d] + "\r\n";
+                log += Data.dataProps[d] + ": " + dataParts[d] + "\r\n";
             }
             dataToSend += "}";
             
-            answer = send(dataParts[0] + "-"+ dataParts[1], dataToSend);
-            if (answer.equals("ERROR")) {
-                JOptionPane.showMessageDialog(null, "Ha ocurrido un error conectandose al servidor. Intente de nuevo en unos momentos.", "Servidor", JOptionPane.ERROR_MESSAGE);
-                return;
-            } else {
+            
+            // Enviar registro de datos al servidor
+            answer = sendRegister(datetime, dataToSend);
+            if (answer.equals("PROCESSED")) {
+                
+                // Actualizar último registro enviado
+                Data.update("LAST=" + datetime);
+                System.out.println("Envío: del " + datetime + " respuesta del servidor fue: " + answer);
+                
+                // Sumar total enviados y volver a buscar
                 updates++;
-                newData = search();
+                newData = search(false);
+                
+            } else {
+                
+                // Mostrar mensaje de error con el servidor
+                JOptionPane.showMessageDialog(null, "Ha ocurrido un error conectandose al servidor. " +
+                    "Intente de nuevo en unos momentos. Si persiste el problema, revise la configuración.", "Servidor", JOptionPane.ERROR_MESSAGE);
+                return;
+                
             }
             
         }
         
-        // Mostrar resultado del procedimiento
-        if (newData.equals("ERROR_READ") && updates == 0) {
-            final String mensaje = "Ha ocurrido un error leyendo los datos del clima de la carpeta de la estación a las " + tiempo + ".";
+        
+        // Mostrar resultado del procesamiento
+        if (updates == 0 && newData.equals("ERROR_READ")) {
+            
+            // Error leyendo el archivo de datos
+            final String mensaje = "Ha ocurrido un error leyendo los datos del clima de la carpeta de la estación a las " + momento + ".";
             JOptionPane.showMessageDialog(null, mensaje, "Datos", JOptionPane.ERROR_MESSAGE);
             UIMain.TXA_State.setText(mensaje);
-        }
-        else if (newData.equals("NO_DATA") && updates == 0) {
-            UIMain.TXA_State.setText("No se han encontrado datos del clima nuevos de la carpeta de la estación a las " + tiempo + ".");
-        }
-        else if (updates > 0) {
-            final String message;
+            
+        } else if (updates == 0 && newData.equals("INFO_NODATA")) {
+            
+            // No se encontraron datos a la primera buscada
+            UIMain.TXA_State.setText("No se han encontrado datos del clima nuevos de la carpeta de la estación a las " + momento + ".");
+            
+        } else if (updates > 0) {
+            
+            // Se encontraron datos y se enviaron, al menos un registro
             if (updates == 1) {
-                UIMain.TXA_State.setText("Ha sido actualizado 1 nuevo registro de datos en el servidor a las " + tiempo + ".");
+                UIMain.TXA_State.setText("Ha sido enviado 1 nuevo registro de datos al servidor a las " + momento + ".");
             } else {
-                UIMain.TXA_State.setText("Han sido actualizados " + updates + " nuevos registros de datos en el servidor a las " + tiempo + ".");
+                UIMain.TXA_State.setText("Han sido enviados " + updates + " nuevos registros de datos al servidor a las " + momento + ".");
             }
-            UIMain.TXA_Data.setText(list);
+            UIMain.TXA_Data.setText(log);
+            
         }
         
     }
@@ -97,30 +177,38 @@ public class Weather {
 
     // Buscar datos no enviados en la carpeta del servidor de acuerdo a Data.lastSent
     // Retorna el primer registro de datos nuevo encontrado
-    // @Data.lastSent es utilizado
-    public static String search() {
-
-        String[] lastDateTime = Data.lastSent.split("-");
+    // @whatever si se va a buscar el primer registro encontrado
+    // @Data.last es utilizado
+    public static String search(boolean whatever) {
+        
+        // En caso de no tener configurado Data.last, el cual es validado en synchronize()
+        if (Data.last == null || (Data.last != null && Data.last.split("-").length != 5)) {
+            return "ERROR_CONFIG";
+        }
+        
+        // Procesar datetime de últimos datos enviados
+        String[] lastDateTime = Data.last.split("-");
         String lastDate = lastDateTime[0] + "/" + lastDateTime[1] + "/" + lastDateTime[2];  // DD/MM/YY
         String lastTime = lastDateTime[3] + ":" + lastDateTime[4];  // HH:MM
-        System.out.println("Los últimos datos procesados son del: " + lastDate + " " + lastTime);
-        
+
+        // Leer archivo de datos
         BufferedReader lector = null;
         try {
-            boolean found = false;
+            
+            boolean found = whatever ? true : false;
             String line, date, time;
             
             // Leer linea a linea el archivo de la estación
             lector = new BufferedReader(new FileReader(Data.stationFolder + "download.txt"));
             while ((line = lector.readLine()) != null) {
                 
-                // Obtener fecha, hora y minuto de la linea en cuestión
+                // Obtener fecha y horaMinuto de la linea en cuestión
                 date = line.substring(0, 9).trim();
                 time = line.substring(10, 16).trim();
                 
                 // Si existen datos nuevos procesarlos y retornarlos
-                if (found && date.length() > 0) {
-                    System.out.println("Datos procesados del: " + date + " " + time);
+                if (found && date.length() > 0 && date.indexOf("/") > 0) {
+                    System.out.println("search() - leyendo datos del " + date + " " + time);
                     line = line.trim().replaceAll("  ", " ").replaceAll("  ", " ").replaceAll("  ", " ").replaceAll(" ", ",");
                     line = line.replace("/","-").replace("/","-").replace(":","-");
                     return line;
@@ -132,36 +220,68 @@ public class Weather {
                 }
                 
             }
-        }
-        catch (IOException e) {
+            
+        } catch (IOException e) {
+            
             try {
                 if (lector != null) {
                     lector.close();
                 }
             } catch (IOException ex) {}
             return "ERROR_READ";
+            
         }
         
-        return "NO_DATA";
+        return "INFO_NODATA";
         
     }
 
     
-    // Send data to server
+    // Enviar un registro de datos al servidor
+    // @datetime es el momento con formato DD-MM-AA-hh-mm
     // @parameters son los datos a enviar
-    // Retorna respuesta del servidor o mensaje de error
-    public static String send(String datetime, String parameters) {
+    // Retorna respuesta del servidor ó mensaje de error
+    public static String sendRegister(String datetime, String parameters) {
+        
+        String url = Data.server + Data.serverAdd;
+        String method = "POST";
+        String query = "key=" + Data.key + "&station=" + Data.station + "&datetime=" + datetime + "&data=" + parameters;
+        
+        return request(url, method, query);
+        
+    }
+    
+    
+    // Pregunta al servidor cuál es el datetime del último registro enviado
+    // Retorna la fecha en formato DD-MM-AA-hh-mm ó NONE
+    public static String askLast() {
+        
+        String url = Data.server + Data.serverGetLast;
+        String method = "GET";
+        String query = "key=" + Data.key + "&station=" + Data.station;
+        
+        return request(url, method, query);
+        
+    }
+
+    
+    // Pedir al servidor una solicitud
+    // @address url de requisito
+    // @method si es GET o POST
+    // @parameters es el query
+    // Retorna la respuesta del servidor
+    public static String request(String address, String method, String parameters) {
 
         URL url;
         HttpURLConnection connection = null;
 
         try {
-            
+
             // Crear conexión
-            url = new URL(Data.server);
+            url = new URL(address);
             connection = (HttpURLConnection) url.openConnection();
 
-            connection.setRequestMethod("POST");
+            connection.setRequestMethod(method);
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             connection.setRequestProperty("Content-Length", Integer.toString(parameters.getBytes().length));
             connection.setRequestProperty("Content-Language", "es-ES");
@@ -173,16 +293,10 @@ public class Weather {
 
             // Enviar datos
             DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-            String query = "key=" + Data.key + "&station=" + Data.station;
-            query += "&data=" + URLEncoder.encode(parameters, "UTF-8");
-            wr.writeBytes(query);
+            wr.writeBytes(URLEncoder.encode(parameters, "UTF-8"));
             wr.flush();
             wr.close();
             
-            
-            // Actualizar registro de último dato enviado
-            Data.update("DATA_LAST:" + datetime);
-
 
             // Recibir respuesta
             String line;
@@ -211,6 +325,5 @@ public class Weather {
         }
 
     }
-
-
+    
 }

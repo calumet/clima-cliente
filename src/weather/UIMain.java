@@ -7,9 +7,6 @@
 package weather;
 
 import java.awt.*;
-import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 
 public final class UIMain extends JFrame {
@@ -33,7 +30,7 @@ public final class UIMain extends JFrame {
     
     // Componentes
     public static PImage IMG_Calumet;
-    public static PImage IMG_Civil;
+    public static PImage IMG_GPH;
     public static PImage IMG_UIS;
     public static JLabel TXT_Info;
     public static JLabel TXT_State;
@@ -70,9 +67,9 @@ public final class UIMain extends JFrame {
 
         // Iniciando
         IMG_UIS = new PImage(Data.uis, 179, 90);
-        IMG_Civil = new PImage(Data.civil, 100, 82);
+        IMG_GPH = new PImage(Data.gph, 100, 82);
         IMG_Calumet = new PImage(Data.calumet, 30, 30);
-        TXT_Info = new JLabel("<html><b>Escuela de Ingeniería Civil de la Universidad Industrial de Santander</b>"
+        TXT_Info = new JLabel("<html><b>Grupo de Investigación en Predicción y Modelamiento Hidroclimático</b>"
                             + "<br>Esta aplicaci&oacute;n observa los datos obtenidos constantemente por la estaci&oacute;n meteorol&oacute;gica."
                             + "<br>Estos son enviados a un servidor para su posterior procesamiento y publicaci&oacute;n web."
                             + "</html>");
@@ -86,7 +83,7 @@ public final class UIMain extends JFrame {
         
         
         // Configurando
-        IMG_Civil.setLocation(20, 20);
+        IMG_GPH.setLocation(20, 20);
         TXT_Info.setBounds(140, 20, 740, 90);
         TXT_Info.setFont(new Font("Serif", Font.PLAIN, 12));
         IMG_UIS.setLocation(780, 20);
@@ -116,7 +113,7 @@ public final class UIMain extends JFrame {
         
         // Agregando componentes a la ventana
         this.getContentPane().add(IMG_UIS);
-        this.getContentPane().add(IMG_Civil);
+        this.getContentPane().add(IMG_GPH);
         this.getContentPane().add(IMG_Calumet);
         this.getContentPane().add(TXT_Info);
         this.getContentPane().add(TXT_State);
@@ -143,18 +140,14 @@ public final class UIMain extends JFrame {
         // Sincronizar datos
         BTN_Sync.addActionListener(new java.awt.event.ActionListener() {
             @Override public void actionPerformed(java.awt.event.ActionEvent evt) {
-                try {
-                    Weather.synchronize();
-                } catch (UnsupportedEncodingException ex) {
-                    Logger.getLogger(UIMain.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                Weather.synchronize();
             }}
         );
         
     }
     
     
-    // Image Class
+    // Clase para crear imágenes
     public class PImage extends JPanel {
         
         private Image img;

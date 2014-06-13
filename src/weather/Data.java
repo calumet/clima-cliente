@@ -14,21 +14,23 @@ public class Data {
     
     
     // Configuración de funcionalidad
-    public static int updateTime = 300;
-    public static String server = "http://localhost:6000/addData";
+    public static int updateTime = 1000 * 60 * 5;
+    public static String serverAdd = "/weather/addData";
+    public static String serverGetLast = "/weather/getDataLast";
     
     // Configuración de usuario
     public static String key = "";
     public static String station = "";
     public static String stationFolder = "";
-    public static String lastSent = "";
+    public static String last = "";
+    public static String server = "";
     
     // Datos estáticos
     public static String uimain_title = "Reportador del Clima";
     public static String uiconfig_title = "Configuración";
     public static String favicon = "resources/favicon.png";
     public static String uis = "resources/uis.png";
-    public static String civil = "resources/civil.png";
+    public static String gph = "resources/gph.png";
     public static String calumet = "resources/calumet.png";
     public static String config = "weather/Config.properties";
     
@@ -36,60 +38,69 @@ public class Data {
     public static String[] dataProps = {
         "date",
         "time",
-        "Temp Out",
-        "Hi Temp",
-        "Low Temp",
-        "Out Hum",
-        "Dew Pt.",
-        "Wind Speed",
-        "Wind Dir",
-        "Wind Run",
-        "Hi Speed",
-        "Hi Dir",
-        "Wind Chill",
-        "Heat Index",
-        "THW index",
-        "THSW Index",
+        "TempOut",
+        "HiTemp",
+        "LowTemp",
+        "OutHum",
+        "DewPt",
+        "WindSpeed",
+        "WindDir",
+        "WindRun",
+        "HiSpeed",
+        "HiDir",
+        "WindChill",
+        "HeatIndex",
+        "THWIndex",
+        "THSWIndex",
         "Bar",
         "Rain",
-        "Rain Rate",
-        "Solar Rad.",
-        "Solar Energy",
-        "Hi Solar Rad.",
-        "UV Index",
-        "UV Dose",
-        "Hi UV",
-        "Heat D-D",
-        "Cool D-D",
-        "In Temp",
-        "In Hum",
-        "In Dew",
-        "In Heat",
+        "RainRate",
+        "SolarRad",
+        "SolarEnergy",
+        "HiSolarRad",
+        "UVIndex",
+        "UVDose",
+        "HiUV",
+        "HeatDD",
+        "CoolDD",
+        "InTemp",
+        "InHum",
+        "InDew",
+        "InHeat",
         "ET",
-        "Wind Samp",
-        "Wind Tx",
-        "ISS Recept",
-        "Arc. Int."
+        "WindSamp",
+        "WindTx",
+        "ISSRecept",
+        "ArcInt"
     };
     
     
-    // Decore files direcctions
+    // Colocar direcciones a archivos de recursos a absolutas
     public static boolean start() {
+        
         try {
+            
+            // Conseguir la dirección del ejecutable
             String path = Data.class.getProtectionDomain().getCodeSource().getLocation().getPath();
             String decodedPath = URLDecoder.decode(path, "UTF-8");
             
+            // Modificar las rutas de los archivos de recursos
             favicon = decodedPath + favicon;
             uis = decodedPath + uis;
-            civil = decodedPath + civil;
+            gph = decodedPath + gph;
             calumet = decodedPath + calumet;
             config = decodedPath + config;
             
+            // Modificados
             return true;
-        }
-        catch (UnsupportedEncodingException e) {
+            
+        } catch (UnsupportedEncodingException e) {
+            
+            // Error consiguiendo dirección del ejecutable
             return false;
+        
         }
+        
     }
     
     
@@ -97,6 +108,7 @@ public class Data {
     public static boolean sync() {
 
         try{
+            
             // Sincronización de datos
             Properties res = new Properties();
             res.load(new FileInputStream(config));
@@ -104,56 +116,67 @@ public class Data {
             	key = res.getProperty("KEY");
             	station = res.getProperty("STATION");
             	stationFolder = res.getProperty("STATION_FOLDER");
-            	lastSent = res.getProperty("DATA_LAST");
+            	server = res.getProperty("SERVER");
+            	last = res.getProperty("LAST");
             }
+            
+            // Fue sincronizado el archivo, aún si estaba vacio
             return true;
-        }
-        catch (IOException ex) {
+        
+        } catch (IOException ex) {
+            
             // Error sincronizando
             return false;
+            
         }
 
     }
 
 
     // Actualizar configuración modificada
-    // @parameters es "prop|valor,prop2|valor2,prop3|valor3"...
+    // @parameters es "prop=valor,prop2=valor2,prop3=valor3"...
     public static boolean update(String parameters) {
         
         Properties fileprops = new Properties();
         OutputStream fileout = null;
         
         try {
+            
             fileout = new FileOutputStream(config);
             
             // Releer los datos cargados
-            fileprops.setProperty("STATION", station);
             fileprops.setProperty("KEY", key);
+            fileprops.setProperty("STATION", station);
             fileprops.setProperty("STATION_FOLDER", stationFolder);
-            fileprops.setProperty("DATA_LAST", lastSent);
+            fileprops.setProperty("SERVER", server);
+            fileprops.setProperty("LAST", last);
             
             // Procesar nuevos datos y guardarlos
             String[] properties = parameters.split(",");
             String[] data;
             for (int prop = 0; prop < properties.length; prop++) {
-                data = properties[prop].split(":");
+                data = properties[prop].split("=");
                 fileprops.setProperty(data[0], data[1]);
             }
             fileprops.store(fileout, null);
             
-            // Actualizar datos
+            // Resincronizar datos
             return Data.sync();
-        }
-        catch (IOException io) {
-            // Error escribiendo archivo
+            
+        } catch (IOException io) {
+            
+            // Error actualizando archivo
             return false;
-        }
-        finally {
+            
+        } finally {
+            
+            // Cerrar archivo
             if (fileout != null) {
                 try {
                     fileout.close();
                 } catch (IOException e) {}
             }
+            
         }
         
     }
