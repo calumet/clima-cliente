@@ -14,7 +14,11 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 public class Weather {
 
@@ -28,6 +32,13 @@ public class Weather {
     // Controlador principal de aplicación
     public static void main(String[] args) {
 
+        // Interfaces: Look and Feel
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(UIMain.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         // Sincronizar datos del usuario
         Data.start();
         Data.sync();
@@ -72,6 +83,8 @@ public class Weather {
         Calendar calendario = new GregorianCalendar();
         String momento = calendario.get(Calendar.HOUR_OF_DAY) + ":" + calendario.get(Calendar.MINUTE) + ":" + calendario.get(Calendar.SECOND);
         
+        // Mostrar mensaje de sincronizando
+        UIMain.TXA_State.setText("Procesando datos. Espere por favor...");
         
         // Buscar datos de acuerdo al datetime del último registro enviado
         String newData;
@@ -137,8 +150,10 @@ public class Weather {
             } else {
                 
                 // Mostrar mensaje de error con el servidor
-                JOptionPane.showMessageDialog(null, "Ha ocurrido un error conectandose al servidor.\r\n" +
-                    "Intente de nuevo en unos momentos. Si persiste el problema, revise la configuración.", "Servidor", JOptionPane.ERROR_MESSAGE);
+                final String message = "Ha ocurrido un error conectándose al servidor.\r\n"
+                                     + "Intente de nuevo en unos momentos. Si persiste el problema, revise la configuración.";
+                JOptionPane.showMessageDialog(null, message, "Servidor", JOptionPane.ERROR_MESSAGE);
+                UIMain.TXA_State.setText(message);
                 return;
                 
             }
@@ -193,7 +208,7 @@ public class Weather {
         BufferedReader lector = null;
         try {
             
-            boolean found = whatever ? true : false;
+            boolean found = whatever;
             String line, date, time;
             
             // Leer linea a linea el archivo de la estación
@@ -241,6 +256,9 @@ public class Weather {
     // Retorna respuesta del servidor ó mensaje de error
     public static String sendRegister(String datetime, String parameters) {
         
+        // Formatear datetime
+        datetime = Data.formatter.toServer(datetime);
+        
         try {
             
             // Crear query codificado
@@ -270,7 +288,14 @@ public class Weather {
         String method = "GET";
         String query = "key=" + Data.key + "&station=" + Data.station;
         
-        return request(url, method, query);
+        String answer = request(url, method, query);
+        
+        // Formatear datetime si llegó uno
+        if (answer.indexOf("-") > 0) {
+            answer = Data.formatter.fromServer(answer);
+        }
+        
+        return answer;
         
     }
 

@@ -46,9 +46,9 @@ public final class UIMain extends JFrame {
     
     // Configurar ventana
     public void configure() {
-        
+
         Toolkit tools = Toolkit.getDefaultToolkit();
-        
+
         // Principal
         this.setTitle(Data.uimain_title);
         this.setIconImage(Toolkit.getDefaultToolkit().getImage(Data.favicon));
@@ -56,9 +56,9 @@ public final class UIMain extends JFrame {
         this.setResizable(false);
         this.setLayout(null);
         this.setBounds((int) tools.getScreenSize().getWidth() / 2 - 500,
-                       (int) tools.getScreenSize().getHeight() / 2 - 300,
-                       1000, 600);
-        
+                (int) tools.getScreenSize().getHeight() / 2 - 300,
+                1000, 600);
+
     }
 
     

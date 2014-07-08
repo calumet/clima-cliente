@@ -15,8 +15,8 @@ public class Data {
     
     // Configuración de funcionalidad
     public static int updateTime = 1000 * 60 * 5;
-    public static String serverAdd = "/eisi/Clima/addData.jsp";
-    public static String serverGetLast = "/eisi/Clima/getLast.jsp";
+    public static String serverAdd = "/eisi/Clima/agregarDatos.jsp";
+    public static String serverGetLast = "/eisi/Clima/conseguirConfig.jsp";
     
     // Configuración de usuario
     public static String key = "";
@@ -35,6 +35,7 @@ public class Data {
     public static String config = "weather/Config.properties";
     
     // Datos que se recolectan
+    // Todos los valores son números flotantes, a excepción de los especificados
     public static String[] dataProps = {
         "date",
         "time",
@@ -44,10 +45,10 @@ public class Data {
         "OutHum",
         "DewPt",
         "WindSpeed",
-        "WindDir",
+        "WindDir",  // Texto
         "WindRun",
         "HiSpeed",
-        "HiDir",
+        "HiDir",  // Texto
         "WindChill",
         "HeatIndex",
         "THWIndex",
@@ -181,5 +182,43 @@ public class Data {
         
     }
     
+    
+    // Formatos de datetime
+    public static class formatter {
+        
+        // Formatear de DD-MM-AA-hh-mm a AAAA-MM-DD-hh-mm
+        public static String toServer(String datetime) {
 
+            String[] frags = datetime.split("-");
+            
+            datetime = "20"+ frags[2]
+                +"-"+ (frags[1].length() == 1 ? "0" + frags[1] : frags[1])
+                +"-"+ (frags[0].length() == 1 ? "0" + frags[0] : frags[0])
+                +"-"+ (frags[3].length() == 1 ? "0" + frags[3] : frags[3])
+                +"-"+ (frags[4].length() == 1 ? "0" + frags[4] : frags[4]);
+
+            return datetime;
+            
+        }
+        
+        // Formatear de AAAA-MM-DD-hh-mm a DD-MM-AA-hh-mm
+        public static String fromServer(String datetime) {
+            
+            String[] frags = datetime.split("-");
+            
+            // AÑO se le quitan los dos primeros números
+            // MES y MINUTOS se mantiene en el cliente con 0M. Ejemplo: 07
+            
+            datetime = (frags[2].charAt(0) == '0' ? frags[2].substring(1) : frags[2])
+                +"-"+ frags[1]
+                +"-"+ frags[0].substring(2)
+                +"-"+ (frags[3].charAt(0) == '0' ? frags[3].substring(1) : frags[3])
+                +"-"+ frags[4];
+
+            return datetime;
+            
+        }
+        
+    }
+    
 }
