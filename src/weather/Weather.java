@@ -84,7 +84,7 @@ public class Weather {
         String momento = calendario.get(Calendar.HOUR_OF_DAY) + ":" + calendario.get(Calendar.MINUTE) + ":" + calendario.get(Calendar.SECOND);
         
         // Mostrar mensaje de sincronizando
-        UIMain.TXA_State.setText("Procesando datos. Espere por favor...");
+        UIMain.TXA_State.setText("Procesando datos. Por favor espere...");
         
         // Buscar datos de acuerdo al datetime del último registro enviado
         String newData;
