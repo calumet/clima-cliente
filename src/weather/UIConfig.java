@@ -25,15 +25,19 @@ public final class UIConfig extends JDialog {
     public static JLabel TXT_Key;
     public static JLabel TXT_Station_Folder;
     public static JLabel TXT_Server;
+    public static JLabel TXT_Last;
     public static JTextField INP_Station;
     public static JTextField INP_Key;
     public static JTextField INP_Station_Folder;
     public static JTextField INP_Server;
+    public static JTextField INP_Last;
     public static JButton BTN_Update;
     
     
     // Mostrar la ventana de configuración
     public void render() {
+        // El único dato que cambia en tiempo de ejecución
+        INP_Last.setText(Data.last);
         setVisible(true);
     }
     
@@ -49,8 +53,8 @@ public final class UIConfig extends JDialog {
         this.setResizable(false);
         this.setLayout(null);
         this.setBounds((int) tools.getScreenSize().getWidth() / 2 - 300,
-                       (int) tools.getScreenSize().getHeight() / 2 - 135,
-                       600, 270);
+                       (int) tools.getScreenSize().getHeight() / 2 - 160,
+                       600, 320);
         
     }
 
@@ -58,42 +62,51 @@ public final class UIConfig extends JDialog {
     // Configurar componentes
     public void components() {
 
-        // Iniciando
+        // Configurando cada componente
         TXT_Station = new JLabel("Nombre de Estación");
-        TXT_Key = new JLabel("Identificación");
-        TXT_Station_Folder = new JLabel("Carpeta de Estación");
-        TXT_Server = new JLabel("Servidor");
-        BTN_Update = new JButton("Actualizar");
-        
-        // Configurando
         TXT_Station.setBounds(20, 20, 160, 25);
         INP_Station = new JTextField(Data.station);
         INP_Station.setBounds(200, 20, 375, 25);
+        INP_Station.setToolTipText("Nombre técnico de la estación");
         
+        TXT_Key = new JLabel("Identificación");
         TXT_Key.setBounds(20, 65, 160, 25);
         INP_Key = new JTextField(Data.key);
         INP_Key.setBounds(200, 65, 375, 25);
+        INP_Key.setToolTipText("Llave de identificación con el servidor");
         
+        TXT_Station_Folder = new JLabel("Carpeta de Estación");
         TXT_Station_Folder.setBounds(20, 110, 160, 25);
         INP_Station_Folder = new JTextField(Data.stationFolder);
         INP_Station_Folder.setBounds(200, 110, 375, 25);
+        INP_Station_Folder.setToolTipText("Carpeta donde se encuentra el download.txt, similar a C:\\ruta\\estacion\\");
         
+        TXT_Server = new JLabel("Servidor");
         TXT_Server.setBounds(20, 155, 160, 25);
         INP_Server = new JTextField(Data.server);
         INP_Server.setBounds(200, 155, 375, 25);
+        INP_Server.setToolTipText("Similar a http://albatros.uis.edu.co");
         
-        BTN_Update.setBounds(452, 200, 120, 30);
+        TXT_Last = new JLabel("Último dato enviado");
+        TXT_Last.setBounds(20, 200, 160, 25);
+        INP_Last = new JTextField(Data.last);
+        INP_Last.setBounds(200, 200, 375, 25);
+        INP_Last.setToolTipText("NONE sino se han enviado ó DD-MM-YY-hh-mm que puede tener un 'a' o 'p' al final");
         
+        BTN_Update = new JButton("Actualizar");
+        BTN_Update.setBounds(452, 245, 120, 30);
         
         // Agregando componentes a la ventana
         this.getContentPane().add(TXT_Station);
         this.getContentPane().add(TXT_Key);
         this.getContentPane().add(TXT_Station_Folder);
         this.getContentPane().add(TXT_Server);
+        this.getContentPane().add(TXT_Last);
         this.getContentPane().add(INP_Station);
         this.getContentPane().add(INP_Key);
         this.getContentPane().add(INP_Station_Folder);
         this.getContentPane().add(INP_Server);
+        this.getContentPane().add(INP_Last);
         this.getContentPane().add(BTN_Update);
 
     }
@@ -111,22 +124,24 @@ public final class UIConfig extends JDialog {
                 data += ",KEY=" + INP_Key.getText();
                 data += ",STATION_FOLDER=" + INP_Station_Folder.getText();
                 data += ",SERVER=" + INP_Server.getText();
+                data += ",LAST=" + INP_Last.getText();
                 
                 // Actualizar
                 boolean updated = Data.update(data);
                 
                 // Revisar si fue actualizado exitosamente o no
                 if (updated) {
-                    JOptionPane.showMessageDialog(null, "Se han actualizado correctamente los datos de la estación.", "Actualización", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Se han actualizado correctamente "
+                        + "los datos de la estación.", "Actualización", JOptionPane.INFORMATION_MESSAGE);
                     setVisible(false);
                 } else {
-                    JOptionPane.showMessageDialog(null, "Ha ocurrido un error en la actualización. Revise los datos e intente de nuevo.", "Actualización", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Ha ocurrido un error en la actualización. "
+                        + "Revise los datos e intente de nuevo.", "Actualización", JOptionPane.ERROR_MESSAGE);
                 }
             
             }}
         );
         
     }
-    
     
 }

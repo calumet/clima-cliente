@@ -32,13 +32,13 @@ public class Data {
     public static String uis = "resources/uis.png";
     public static String gph = "resources/gph.png";
     public static String calumet = "resources/calumet.png";
-    public static String config = "weather/Config.properties";
+    public static String config = "resources/Config.properties";
     
     // Datos que se recolectan
     // Todos los valores son números flotantes, a excepción de los especificados
     public static String[] dataProps = {
-        "date",
-        "time",
+        "date",  // Opcionales
+        "time",  // Opcionales
         "TempOut",
         "HiTemp",
         "LowTemp",
@@ -84,6 +84,7 @@ public class Data {
             // Conseguir la dirección del ejecutable
             String path = Data.class.getProtectionDomain().getCodeSource().getLocation().getPath();
             String decodedPath = URLDecoder.decode(path, "UTF-8");
+            decodedPath = decodedPath.replace("weather.jar", "");
             
             // Modificar las rutas de los archivos de recursos
             favicon = decodedPath + favicon;
@@ -146,17 +147,17 @@ public class Data {
             fileout = new FileOutputStream(config);
             
             // Releer los datos cargados
-            fileprops.setProperty("KEY", key);
-            fileprops.setProperty("STATION", station);
-            fileprops.setProperty("STATION_FOLDER", stationFolder);
-            fileprops.setProperty("SERVER", server);
+            fileprops.setProperty("KEY", key == null ? "" : key);
+            fileprops.setProperty("STATION", station == null ? "" : station);
+            fileprops.setProperty("STATION_FOLDER", stationFolder == null ? "" : stationFolder);
+            fileprops.setProperty("SERVER", server == null ? "" : server);
             fileprops.setProperty("LAST", last == null ? "" : last);
             
             // Procesar nuevos datos y guardarlos
             String[] properties = parameters.split(",");
             String[] data;
-            for (int prop = 0; prop < properties.length; prop++) {
-                data = properties[prop].split("=");
+            for (String property : properties) {
+                data = property.split("=");
                 fileprops.setProperty(data[0], data[1]);
             }
             fileprops.store(fileout, null);
@@ -191,30 +192,20 @@ public class Data {
 
             String[] frags = datetime.split("-");
             
+            // En caso de DD-MM-AA-hh-mm(a|p) entonces cambiar a hh-mm
+            if (frags[4].contains("a")) {
+                frags[4] = "12a".equals(frags[4]) ? "00" : frags[4].replace("a", "");
+            } else if (frags[4].contains("p")) {
+                frags[4] = frags[4].replace("p", "");
+                frags[3] = (Integer.parseInt(frags[3]) + 12) + "";
+            }
+            
             datetime = "20"+ frags[2]
                 +"-"+ (frags[1].length() == 1 ? "0" + frags[1] : frags[1])
                 +"-"+ (frags[0].length() == 1 ? "0" + frags[0] : frags[0])
                 +"-"+ (frags[3].length() == 1 ? "0" + frags[3] : frags[3])
                 +"-"+ (frags[4].length() == 1 ? "0" + frags[4] : frags[4]);
-
-            return datetime;
             
-        }
-        
-        // Formatear de AAAA-MM-DD-hh-mm a DD-MM-AA-hh-mm
-        public static String fromServer(String datetime) {
-            
-            String[] frags = datetime.split("-");
-            
-            // AÑO se le quitan los dos primeros números
-            // MES y MINUTOS se mantiene en el cliente con 0M. Ejemplo: 07
-            
-            datetime = (frags[2].charAt(0) == '0' ? frags[2].substring(1) : frags[2])
-                +"-"+ frags[1]
-                +"-"+ frags[0].substring(2)
-                +"-"+ (frags[3].charAt(0) == '0' ? frags[3].substring(1) : frags[3])
-                +"-"+ frags[4];
-
             return datetime;
             
         }

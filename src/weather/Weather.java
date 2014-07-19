@@ -27,6 +27,7 @@ public class Weather {
     public static UIMain uimain = null;
     public static UIConfig uiconfig = null;
     public static Timer update = null;
+    public static String State = "NORMAL";
     
 
     // Controlador principal de aplicación
@@ -58,13 +59,14 @@ public class Weather {
     public static void interval(boolean start) {
         
         // Iniciar sincronizaciones cada intervalo
+        // Iniciar la primera a los 60 segundos
         if (start) {
             update = new Timer();
             update.schedule(new TimerTask() {
                 @Override public void run() {
                     Weather.synchronize();
                 }
-            }, 3000, Data.updateTime);
+            }, 1000 * 60, Data.updateTime);
         }
         // Detener sincronizaciones si ha sido iniciado
         else {
@@ -79,38 +81,28 @@ public class Weather {
     // Revisar qué datos no han sido sincronizados si se encuentran, procesarlos y enviarlos
     public static void synchronize() {
         
-        // Tiempo en el momento de sincronizar
-        Calendar calendario = new GregorianCalendar();
-        String momento = calendario.get(Calendar.HOUR_OF_DAY) + ":" + calendario.get(Calendar.MINUTE) + ":" + calendario.get(Calendar.SECOND);
+        // Activar estado de procesamiento de datos
+        if ("PROCESSING".equals(State)) {
+            return;
+        }
+        State = "PROCESSING";
         
         // Mostrar mensaje de sincronizando
         UIMain.TXA_State.setText("Procesando datos. Por favor espere...");
         
-        // Buscar datos de acuerdo al datetime del último registro enviado
+        // Tiempo en el momento de sincronizar
+        Calendar calendario = new GregorianCalendar();
+        String momento = calendario.get(Calendar.HOUR_OF_DAY) + ":" + calendario.get(Calendar.MINUTE) + ":" + calendario.get(Calendar.SECOND);
+        
+        // Buscar datos de acuerdo a la configuración
+        // Si la configuración está incorrecta, detener el proceso
         String newData;
-        if (Data.last == null || (Data.last != null && Data.last.split("-").length != 5)) {
-            
-            // No está configurado Data.last, configurarlo
-            String lastRegisterSent = askLast();
-            switch (lastRegisterSent) {
-                case "NONE":
-                    newData = search(true);
-                    break;
-                case "ERROR":
-                    JOptionPane.showMessageDialog(null, "No se ha configurado el último dato enviado y ocurrió un error " +
-                        "conectándose al servidor.\r\nIntente de nuevo. Si persiste el problema, contacte el administrador para configurarlo.", "Configuración", JOptionPane.ERROR_MESSAGE);
-                    return;
-                default:
-                    Data.update("LAST=" + lastRegisterSent);
-                    newData = search(false);
-                    break;
-            }
-            
-        } else {
-            
-            // Está configurado Data.last, buscar de acuerdo a su valor
-            newData = search(false);
-            
+        newData = "NONE".equals(Data.last) ? search(true) : search(false);
+        if ("ERROR_CONFIG".equals(newData)) {
+            final String message = "El valor del \"último dato enviado\" está mal configurado. Cambielo por favor.";
+            JOptionPane.showMessageDialog(null, message, "Configuración", JOptionPane.ERROR_MESSAGE);
+            UIMain.TXA_State.setText(message);
+            return;
         }
         
         
@@ -118,7 +110,7 @@ public class Weather {
         String answer;
         int updates = 0;
         String log = "";
-        while (!newData.equals("ERROR_READ") && !newData.equals("INFO_NODATA")) {
+        while (!"ERROR_READ".equals(newData) && !"INFO_NODATA".equals(newData)) {
             
             String dataToSend = "";
             String[] dataParts = newData.split(",");
@@ -138,7 +130,7 @@ public class Weather {
             
             // Enviar registro de datos al servidor
             answer = sendRegister(datetime, dataToSend);
-            if (answer.equals("PROCESSED")) {
+            if ("PROCESSED".equals(answer)) {
                 
                 // Actualizar último registro enviado
                 Data.update("LAST=" + datetime);
@@ -147,11 +139,12 @@ public class Weather {
                 updates++;
                 newData = search(false);
                 
-            } else {
+            }
+            // Mostrar mensaje de error con el servidor en tal caso
+            else {
                 
-                // Mostrar mensaje de error con el servidor
                 final String message = "Ha ocurrido un error conectándose al servidor.\r\n"
-                                     + "Intente de nuevo en unos momentos. Si persiste el problema, revise la configuración.";
+                    + "Intente de nuevo en unos momentos. Si persiste el problema, revise la configuración.";
                 JOptionPane.showMessageDialog(null, message, "Servidor", JOptionPane.ERROR_MESSAGE);
                 UIMain.TXA_State.setText(message);
                 return;
@@ -162,14 +155,14 @@ public class Weather {
         
         
         // Mostrar resultado del procesamiento
-        if (updates == 0 && newData.equals("ERROR_READ")) {
+        if (updates == 0 && "ERROR_READ".equals(newData)) {
             
             // Error leyendo el archivo de datos
             final String mensaje = "Ha ocurrido un error leyendo los datos del clima de la carpeta de la estación a las " + momento + ".";
             JOptionPane.showMessageDialog(null, mensaje, "Datos", JOptionPane.ERROR_MESSAGE);
             UIMain.TXA_State.setText(mensaje);
             
-        } else if (updates == 0 && newData.equals("INFO_NODATA")) {
+        } else if (updates == 0 && "INFO_NODATA".equals(newData)) {
             
             // No se encontraron datos a la primera buscada
             UIMain.TXA_State.setText("No se han encontrado datos del clima nuevos de la carpeta de la estación a las " + momento + ".");
@@ -184,7 +177,16 @@ public class Weather {
             }
             UIMain.TXA_Data.setText(log);
             
+            // Si ocurrió un error al final
+            if ("ERROR_READ".equals(newData)) {
+                JOptionPane.showMessageDialog(null, "Ocurrió un error al final del "
+                    + "procesado de datos. Revise el último dato procesado.", "Datos", JOptionPane.ERROR_MESSAGE);
+            }
+            
         }
+        
+        // Volver al estado normal
+        State = "NORMAL";
         
     }
 
@@ -196,39 +198,46 @@ public class Weather {
     public static String search(boolean whatever) {
         
         // Procesar datetime de últimos datos enviados
-        String[] lastDateTime = {};
-        String lastDate = "", lastTime = "";
         if (!whatever) {
-            lastDateTime = Data.last.split("-");
-            lastDate = lastDateTime[0] + "/" + lastDateTime[1] + "/" + lastDateTime[2];  // DD/MM/YY
-            lastTime = lastDateTime[3] + ":" + lastDateTime[4];  // HH:MM
+            if (Data.last.split("-").length < 5) {
+                return "ERROR_CONFIG";
+            }
         }
-
+        
         // Leer archivo de datos
         BufferedReader lector = null;
         try {
             
+            boolean valid;
             boolean found = whatever;
-            String line, date, time;
+            String line;
+            String[] fragments;
+            
+            lector = new BufferedReader(new FileReader(Data.stationFolder + "download.txt"));
+            
+            // Pasarse las primeras 3 lineas
+            for (int i = 0; i < 3; i++) {
+                lector.readLine();
+            }
             
             // Leer linea a linea el archivo de la estación
-            lector = new BufferedReader(new FileReader(Data.stationFolder + "download.txt"));
             while ((line = lector.readLine()) != null) {
                 
-                // Obtener fecha y horaMinuto de la linea en cuestión
-                date = line.substring(0, 9).trim();
-                time = line.substring(10, 16).trim();
+                // Procesar linea en cuestión y el datetime
+                line = line.trim().replaceAll("  ", " ").replaceAll("  ", " ").replaceAll("  ", " ")
+                       .trim().replaceAll(" ", ",");
+                line = line.replace("/","-").replace("/","-").replace(":","-");
+                fragments = line.split(",");
+                valid = fragments.length == 36;
                 
                 // Si existen datos nuevos procesarlos y retornarlos
-                if (found && date.length() > 0 && date.indexOf("/") > 0) {
-                    System.out.println("search() - leyendo datos del " + date + " " + time);
-                    line = line.trim().replaceAll("  ", " ").replaceAll("  ", " ").replaceAll("  ", " ").replaceAll(" ", ",");
-                    line = line.replace("/","-").replace("/","-").replace(":","-");
+                if (valid && found) {
+                    System.out.println("search() - leyendo datos del " + fragments[0] + " " + fragments[1]);
                     return line;
                 }
                 
                 // Se encontró el último dato enviado
-                if (date.equals(lastDate) && time.equals(lastTime)) {
+                if (valid && Data.last.equals(fragments[0] + "-" + fragments[1])) {
                     found = true;
                 }
                 
@@ -264,11 +273,12 @@ public class Weather {
             // Crear query codificado
             String url = Data.server + Data.serverAdd;
             String method = "POST";
-            String query = "key=" + Data.key + "&station=" + Data.station + "&datetime=" + datetime +
-                           "&data=" + URLEncoder.encode(parameters, "UTF-8");
+            String query = "key=" + Data.key + "&station=" + Data.station
+                + "&datetime=" + datetime
+                + "&data=" + URLEncoder.encode(parameters, "UTF-8");
 
             // Requerir
-            return request(url, method, query);
+            return request(url, method, query, datetime);
             
         } catch(UnsupportedEncodingException e) {
             
@@ -280,32 +290,12 @@ public class Weather {
     }
     
     
-    // Pregunta al servidor cuál es el datetime del último registro enviado
-    // Retorna la fecha en formato DD-MM-AA-hh-mm ó NONE
-    public static String askLast() {
-        
-        String url = Data.server + Data.serverGetLast;
-        String method = "GET";
-        String query = "key=" + Data.key + "&station=" + Data.station;
-        
-        String answer = request(url, method, query);
-        
-        // Formatear datetime si llegó uno
-        if (answer.indexOf("-") > 0) {
-            answer = Data.formatter.fromServer(answer);
-        }
-        
-        return answer;
-        
-    }
-
-    
     // Pedir al servidor una solicitud
     // @address url de requisito
     // @method si es GET o POST
     // @parameters es el query
     // Retorna la respuesta del servidor
-    public static String request(String address, String method, String parameters) {
+    public static String request(String address, String method, String parameters, String comments) {
 
         URL url;
         HttpURLConnection connection = null;
@@ -344,7 +334,8 @@ public class Weather {
             }
             rd.close();
             String answer = response.toString().trim();
-            System.out.println("request() - " + address + " " + method + " - " + answer);
+            System.out.println("request() - " + address + " " + method
+                + " - " + comments + " - " + answer);
             return answer;
 
         } catch (IOException e) {
