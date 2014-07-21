@@ -194,10 +194,13 @@ public class Data {
             
             // En caso de DD-MM-AA-hh-mm(a|p) entonces cambiar a hh-mm
             if (frags[4].contains("a")) {
-                frags[4] = "12a".equals(frags[4]) ? "00" : frags[4].replace("a", "");
+                frags[4] = frags[4].replace("a", "");
+                frags[3] = "12".equals(frags[3]) ? "00" : frags[3];
             } else if (frags[4].contains("p")) {
                 frags[4] = frags[4].replace("p", "");
-                frags[3] = (Integer.parseInt(frags[3]) + 12) + "";
+                frags[3] = "12".equals(frags[3])
+                    ? frags[3]
+                    : (Integer.parseInt(frags[3]) + 12) + "";
             }
             
             datetime = "20"+ frags[2]
