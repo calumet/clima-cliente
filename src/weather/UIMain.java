@@ -70,9 +70,9 @@ public final class UIMain extends JFrame {
         IMG_GPH = new PImage(Data.gph, 100, 82);
         IMG_Calumet = new PImage(Data.calumet, 30, 30);
         TXT_Info = new JLabel("<html><b>Grupo de Investigación en Predicción y Modelamiento Hidroclimático</b>"
-                            + "<br>Esta aplicaci&oacute;n observa los datos obtenidos constantemente por la estaci&oacute;n meteorol&oacute;gica."
-                            + "<br>Estos son enviados a un servidor para su posterior procesamiento y publicaci&oacute;n web."
-                            + "</html>");
+            + "<br>Esta aplicaci&oacute;n observa los datos obtenidos constantemente por la estaci&oacute;n meteorol&oacute;gica."
+            + "<br>Estos son enviados a un servidor para su posterior procesamiento y publicaci&oacute;n web."
+            + "</html>");
         TXT_State = new JLabel("Estado Aplicación - Servidor");
         TXA_State = new JTextArea("La aplicación no ha sincronizado datos hasta el momento.");
         TXT_Data = new JLabel("Últimos Datos Enviados");
