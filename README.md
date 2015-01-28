@@ -1,4 +1,4 @@
-UIS Weather v1.2.4
+UIS Weather v1.2.5
 ==================
 
 Aplicación de escritorio para la lectura, procesado y envío de datos climatológicos de una estación [Davis Vantage Pro 2](http://www.davisnet.com/weather/products/weather_product.asp?pnum=06152) con la aplicación WeatherLink v5.7.1 a un servidor externo para su posterior procesamiento.

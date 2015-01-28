@@ -24,7 +24,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 public class Weather {
 
   // Objetos principales.
-  public static String VERSION = "1.2.4";
+  public static String VERSION = "1.2.5";
   public static UIMain uimain = null;
   public static UIConfig uiconfig = null;
   public static Timer update = null;
@@ -100,6 +100,7 @@ public class Weather {
             }
           });
         } catch (Exception e) {}
+        uiconfig.setVisible(false);
         Weather.sync();
       }
     };
@@ -287,8 +288,8 @@ public class Weather {
       String url = Data.server + Data.serverAdd;
       String method = "POST";
       String query = "key=" + Data.key + "&station=" + Data.station
-        +"&datetime="+ datetime
-        +"&data="+ URLEncoder.encode(parameters, "UTF-8");
+        + "&datetime=" + datetime
+        + "&data=" + URLEncoder.encode(parameters, "UTF-8");
 
       // Requerir.
       return request(url, method, query, datetime);
@@ -343,8 +344,8 @@ public class Weather {
       }
       rd.close();
       String answer = response.toString().trim();
-      System.out.println("request() - "+ address +" "+ method
-        +" - "+ comments + " - " + answer);
+      System.out.println("request() - " + address + " " + method
+        + " - " + comments + " - " + answer);
       return answer;
 
     } catch (IOException e) {

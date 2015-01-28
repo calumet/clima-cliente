@@ -130,7 +130,13 @@ public final class UIMain extends JFrame {
     // Mostrar ventana de configuración.
     BTN_Config.addActionListener(new java.awt.event.ActionListener() {
       @Override public void actionPerformed(java.awt.event.ActionEvent evt) {
-        Weather.uiconfig.render();
+        if (Weather.State.equals("NORMAL")) {
+          Weather.uiconfig.render();
+        } else {
+          JOptionPane.showMessageDialog(null, "No se puede cambiar la "
+            +"configuración en este momento.", "Sincronizando",
+            JOptionPane.INFORMATION_MESSAGE);
+        }
       }}
     );
     
