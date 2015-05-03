@@ -1,8 +1,9 @@
 /*!
  * Universidad Industrial de Santander
  * Grupo de Desarrollo de Software Calumet
- * Weather | Aplicación | Ventana Principal
- * Romel Pérez prhone.blogspot.com, 2015
+ * Clima | Aplicación Cliente | Ventana Principal
+ * Creado por Romel Pérez (romelperez.blogspot.com), 2014
+ * Actualizado por Romel Pérez, Mayo del 2015
  */
 
 package weather;
@@ -12,7 +13,10 @@ import javax.swing.*;
 
 public final class UIMain extends JFrame {
 
-  // Initialización.
+  /**
+   * Initialización.
+   * @return Instancia de la ventana.
+   */
   public UIMain() {
     
     configure();
@@ -26,9 +30,11 @@ public final class UIMain extends JFrame {
     });
     
   }
-  
-  
-  // Componentes.
+
+
+  /**
+   * Componentes.
+   */
   public PImage IMG_Calumet;
   public PImage IMG_GPH;
   public PImage IMG_UIS;
@@ -42,9 +48,11 @@ public final class UIMain extends JFrame {
   public JLabel TXT_Calumet;
   public JButton BTN_Config;
   public JButton BTN_Sync;
-  
-  
-  // Configurar ventana.
+
+
+  /**
+   * Configurar ventana.
+   */
   public void configure() {
     Toolkit tools = Toolkit.getDefaultToolkit();
 
@@ -59,8 +67,10 @@ public final class UIMain extends JFrame {
         1000, 600);
   }
 
-  
-  // Configurar componentes.
+
+  /**
+   * Configurar componentes.
+   */
   public void components() {
 
     // Iniciando.
@@ -78,37 +88,37 @@ public final class UIMain extends JFrame {
     TXT_Calumet = new JLabel("Desarrollado por el Grupo Calumet (versión "+ Weather.VERSION +")");
     BTN_Config = new JButton("Configurar");
     BTN_Sync = new JButton("Sincronizar");
-    
-    
+
+
     // Configurando.
     IMG_GPH.setLocation(20, 20);
     TXT_Info.setBounds(140, 20, 740, 90);
     TXT_Info.setFont(new Font("Arial", Font.PLAIN, 12));
     IMG_UIS.setLocation(780, 20);
-    
+
     TXT_State.setBounds(20, 150, 600, 20);
-    
+
     TXA_State.setEditable(false);
     TXA_State.setLineWrap(true);
     TXA_State.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
     TXA_State_Scroll = new JScrollPane (TXA_State, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     TXA_State_Scroll.setBounds(20, 180, 940, 40);
-    
+
     TXT_Data.setBounds(20, 250, 940, 20);
-    
+
     TXA_Data.setEditable(false);
     TXA_Data.setLineWrap(true);
     TXA_Data.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
     TXA_Data_Scroll = new JScrollPane (TXA_Data, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     TXA_Data_Scroll.setBounds(20, 280, 940, 200);
-    
+
     IMG_Calumet.setLocation(20, 520);
     TXT_Calumet.setBounds(60, 520, 400, 30);
-    
+
     BTN_Config.setBounds(540, 520, 200, 30);
     BTN_Sync.setBounds(760, 520, 200, 30);
-    
-    
+
+
     // Agregando componentes a la ventana.
     this.getContentPane().add(IMG_UIS);
     this.getContentPane().add(IMG_GPH);
@@ -122,9 +132,11 @@ public final class UIMain extends JFrame {
     this.getContentPane().add(BTN_Config);
     this.getContentPane().add(BTN_Sync);
   }
-  
-  
-  // Interacciones.
+
+
+  /**
+   * Interacciones.
+   */
   public void controllers() {
     
     // Mostrar ventana de configuración.
@@ -147,25 +159,27 @@ public final class UIMain extends JFrame {
       }}
     );
   }
-  
-  
-  // Clase para crear imágenes.
+
+
+  /**
+   * Clase para crear imágenes.
+   */
   public class PImage extends JPanel {
-    
+
     private Image img;
     private Dimension size;
-    
+
     public PImage(String src, int width, int height) {
       img = new ImageIcon(src).getImage();
       size = new Dimension(width, height);
       this.setLayout(null);
       this.setSize(width, height);
     }
-    
+
     @Override public void paintComponent(Graphics g) {
       g.drawImage(img, 0, 0, null);
     }
-    
+
   }
 
 }

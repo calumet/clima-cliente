@@ -1,8 +1,9 @@
 /*!
  * Universidad Industrial de Santander
  * Grupo de Desarrollo de Software Calumet
- * Weather | Aplicación | Ventana de Configuración
- * Romel Pérez prhone.blogspot.com, 2015
+ * Clima | Aplicación Cliente | Ventana de Configuración
+ * Creado por Romel Pérez (romelperez.blogspot.com), 2014
+ * Actualizado por Romel Pérez, Mayo del 2015
  */
 
 package weather;
@@ -11,16 +12,21 @@ import java.awt.Toolkit;
 import javax.swing.*;
 
 public final class UIConfig extends JDialog {
-	
-	// Initialización.
+
+	/**
+	 * Initialización.
+	 * @return Instancia de la ventana.
+	 */
 	public UIConfig() {
 		configure();
 		components();
 		controllers();
 	}
-	
-	
-	// Componentes.
+
+
+	/**
+	 * Componentes.
+	 */
 	public JLabel TXT_Station;
 	public JLabel TXT_Key;
 	public JLabel TXT_Station_Folder;
@@ -32,18 +38,22 @@ public final class UIConfig extends JDialog {
 	public JTextField INP_Server;
 	public JTextField INP_Last;
 	public JButton BTN_Update;
-	
-	
-	// Mostrar la ventana de configuración.
+
+
+	/**
+	 * Mostrar la ventana de configuración.
+	 */
 	public void render() {
 		
 		// El único dato que cambia en tiempo de ejecución.
 		INP_Last.setText(Data.last);
 		setVisible(true);
 	}
-	
-	
-	// Configurar ventana.
+
+
+	/**
+	 * Configurar ventana.
+	 */
 	public void configure() {
 		
 		Toolkit tools = Toolkit.getDefaultToolkit();
@@ -58,8 +68,10 @@ public final class UIConfig extends JDialog {
 					   600, 320);
 	}
 
-	
-	// Configurar componentes.
+
+	/**
+	 * Configurar componentes.
+	 */
 	public void components() {
 
 		// Configurando cada componente.
@@ -109,9 +121,11 @@ public final class UIConfig extends JDialog {
 		this.getContentPane().add(INP_Last);
 		this.getContentPane().add(BTN_Update);
 	}
-	
-	
-	// Interacciones.
+
+
+	/**
+	 * Interacciones.
+	 */
 	public void controllers() {
 				
 		// Actualizar datos modificados.
@@ -140,5 +154,5 @@ public final class UIConfig extends JDialog {
 			}}
 		);
 	}
-	
+
 }

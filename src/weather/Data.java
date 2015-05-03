@@ -1,8 +1,9 @@
 /*!
  * Universidad Industrial de Santander
  * Grupo de Desarrollo de Software Calumet
- * Weather | Aplicación | Datos
- * Romel Pérez prhone.blogspot.com, 2015
+ * Clima | Aplicación Cliente | Datos
+ * Creado por Romel Pérez (romelperez.blogspot.com), 2014
+ * Actualizado por Romel Pérez, Mayo del 2015
  */
 
 package weather;
@@ -12,20 +13,26 @@ import java.net.URLDecoder;
 import java.util.Properties;
 
 public class Data {
-  
-  // Configuración de funcionalidad.
+
+  /**
+   * Configuración de funcionalidad.
+   */
   public static int updateTime = 1000 * 60 * 5;
-  public static String serverAdd = "/eisi/Clima/functions/agregarDatos.jsp";
-  public static String serverGetLast = "/eisi/Clima/functions/conseguirConfig.jsp";
-  
-  // Configuración de usuario.
+  public static String serverAdd = "/eisi/Clima/Procesos/Agregar.jsp";
+  public static String serverGetLast = "/eisi/Clima/Procesos/Conseguir.jsp";
+
+  /**
+   * Configuración de usuario.
+   */
   public static String key = "";
   public static String station = "";
   public static String stationFolder = "";
   public static String last = "";
   public static String server = "";
-  
-  // Datos estáticos.
+
+  /**
+   * Datos estáticos.
+   */
   public static String uimain_title = "Reportador del Clima";
   public static String uiconfig_title = "Configuración";
   public static String favicon = "resources/favicon.png";
@@ -33,9 +40,11 @@ public class Data {
   public static String gph = "resources/gph.png";
   public static String calumet = "resources/calumet.png";
   public static String config = "resources/Config.properties";
-  
-  // Datos que se recolectan.
-  // Todos los valores son números flotantes, a excepción de los especificados.
+
+  /**
+   * Datos que se recolectan.
+   * Todos los valores son números flotantes, a excepción de los especificados.
+   */
   public static String[] dataProps = {
     "date",  // Opcionales
     "time",  // Opcionales
@@ -74,9 +83,12 @@ public class Data {
     "ISSRecept",
     "ArcInt"
   };
-  
-  
-  // Colocar direcciones a archivos de recursos a absolutas.
+
+
+  /**
+   * Colocar direcciones a archivos de recursos a absolutas.
+   * @return [description]
+   */
   public static boolean start() {
     
     try {
@@ -102,9 +114,12 @@ public class Data {
       return false;
     }
   }
-  
-  
-  // Leer los datos del archivo de configuración y sincronizarlos.
+
+
+  /**
+   * Leer los datos del archivo de configuración y sincronizarlos.
+   * @return Si se sincronizó correctamente.
+   */
   public static boolean sync() {
 
     try{
@@ -130,9 +145,12 @@ public class Data {
     }
   }
 
-
-  // Actualizar configuración modificada.
-  // @parameters es "prop=valor,prop2=valor2,prop3=valor3"...
+ 
+  /**
+   * Actualizar configuración modificada.
+   * @param  parameters Es "prop=valor,prop2=valor2,prop3=valor3"...
+   * @return            Si se actualizó correctamente.
+   */
   public static boolean update(String parameters) {
     Properties fileprops = new Properties();
     OutputStream fileout = null;
@@ -174,15 +192,21 @@ public class Data {
       }
     }
   }
-  
-  
-  // Formatos de datetime.
+
+
+  /**
+   * Formatos de datetime.
+   */
   public static class formatter {
-    
-    // Formatear de DD-MM-AA-hh-mm a AAAA-MM-DD-hh-mm.
+
+    /**
+     * Formatear de DD-MM-AA-hh-mm a AAAA-MM-DD-hh-mm.
+     * @param  datetime Datetime a darle formato.
+     * @return          El datetime formateado.
+     */
     public static String toServer(String datetime) {
       String[] frags = datetime.split("-");
-      
+
       // En caso de DD-MM-AA-hh-mm(a|p) entonces cambiar a hh-mm.
       if (frags[4].contains("a")) {
         frags[4] = frags[4].replace("a", "");
@@ -193,16 +217,16 @@ public class Data {
           ? frags[3]
           : (Integer.parseInt(frags[3]) + 12) + "";
       }
-      
+
       datetime = "20"+ frags[2]
         +"-"+ (frags[1].length() == 1 ? "0" + frags[1] : frags[1])
         +"-"+ (frags[0].length() == 1 ? "0" + frags[0] : frags[0])
         +"-"+ (frags[3].length() == 1 ? "0" + frags[3] : frags[3])
         +"-"+ (frags[4].length() == 1 ? "0" + frags[4] : frags[4]);
-      
+
       return datetime;
     }
-    
+
   }
-  
+
 }

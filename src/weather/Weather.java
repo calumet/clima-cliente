@@ -1,8 +1,9 @@
 /*!
  * Universidad Industrial de Santander
  * Grupo de Desarrollo de Software Calumet
- * Weather | Aplicación | Principal
- * Romel Pérez prhone.blogspot.com, 2015
+ * Clima | Aplicación Cliente | Principal
+ * Creado por Romel Pérez (romelperez.blogspot.com), 2014
+ * Actualizado por Romel Pérez, Mayo del 2015
  */
 
 package weather;
@@ -23,16 +24,21 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 public class Weather {
 
-  // Objetos principales.
-  public static String VERSION = "1.2.5";
+  /**
+   * Objetos principales.
+   */
+  public static String VERSION = "1.2.6";
   public static UIMain uimain = null;
   public static UIConfig uiconfig = null;
   public static Timer update = null;
   public static String State = "NORMAL";
   public static Thread syncThread = null;
-  
 
-  // Controlador principal de aplicación.
+
+  /**
+   * Controlador principal de aplicación.
+   * @param args Argumentos pasados al programa.
+   */
   public static void main(String[] args) {
 
     // Interfaces: Look and Feel.
@@ -54,10 +60,12 @@ public class Weather {
     // Iniciar intervalo de sincronización.
     interval(true);
   }
-  
-  
-  // Intervalo de tiempo para sincronizar.
-  // @start si comienza a sincronizar o la cancela.
+
+
+  /**
+   * Intervalo de tiempo para sincronizar.
+   * @param start Si comienza a sincronizar o la cancela.
+   */
   public static void interval(boolean start) {
     
     // Iniciar sincronizaciones cada intervalo.
@@ -78,9 +86,11 @@ public class Weather {
       }
     }
   }
-  
-  
-  // Iniciar proceso de sincronización.
+
+
+  /**
+   * Iniciar proceso de sincronización.
+   */
   public static void startSync() {
     
     // Activar estado de procesamiento de datos.
@@ -107,17 +117,19 @@ public class Weather {
     syncThread = new Thread(tr);
     syncThread.start();
   }
-  
-  
-  // Revisar qué datos no han sido sincronizados si se encuentran, procesarlos
-  // y enviarlos.
+
+
+  /**
+   * Revisar qué datos no han sido sincronizados si se encuentran, procesarlos y
+   * enviarlos.
+   */
   public static void sync() {
     
     // Tiempo en el momento de sincronizar.
     Calendar calendario = new GregorianCalendar();
     String momento = calendario.get(Calendar.HOUR_OF_DAY) +":"+
       calendario.get(Calendar.MINUTE) +":"+ calendario.get(Calendar.SECOND);
-    
+
     // Buscar datos de acuerdo a la configuración.
     // Si la configuración está incorrecta, detener el proceso search(true)
     // para enviar todo lo que encuentre, en caso contrario, el último registro.
@@ -149,10 +161,10 @@ public class Weather {
         log += Data.dataProps[d] + ": " + dataParts[d] + "\r\n";
       }
       dataToSend += "}";
-      
+
       // Enviar registro de datos al servidor.
       answer = sendRegister(datetime, dataToSend);
-      if ("PROCESSED".equals(answer)) {
+      if ("PROCESSED".equals(answer) || "EXIST".equals(answer)) {
         
         // Actualizar último registro enviado.
         Data.update("LAST=" + datetime);
@@ -211,10 +223,11 @@ public class Weather {
   }
 
 
-  // Buscar datos no enviados en la carpeta del servidor de acuerdo a Data.lastSent.
-  // Retorna el primer registro de datos nuevo encontrado.
-  // @whatever si se va a buscar el primer registro encontrado.
-  // @Data.last es utilizado.
+  /**
+   * Buscar datos no enviados en la carpeta del servidor de acuerdo a Data.last.
+   * @param  whatever si se va a buscar el primer registro encontrado.
+   * @return          Retorna el primer registro de datos nuevo encontrado.
+   */
   public static String search(boolean whatever) {
     
     // Procesar datetime de últimos datos enviados.
@@ -223,7 +236,7 @@ public class Weather {
         return "ERROR_CONFIG";
       }
     }
-    
+
     // Leer archivo de datos.
     BufferedReader lector = null;
     try {
@@ -268,15 +281,17 @@ public class Weather {
       } catch (IOException ex) {}
       return "ERROR_READ";
     }
-    
+
     return "INFO_NODATA";
   }
 
-  
-  // Enviar un registro de datos al servidor.
-  // @datetime es el momento con formato DD-MM-AA-hh-mm.
-  // @parameters son los datos a enviar.
-  // Retorna respuesta del servidor ó mensaje de error.
+
+  /**
+   * Enviar un registro de datos al servidor.
+   * @param  datetime   Es el momento con formato DD-MM-AA-hh-mm.
+   * @param  parameters Son los datos a enviar.
+   * @return            Retorna respuesta del servidor ó mensaje de error.
+   */
   public static String sendRegister(String datetime, String parameters) {
     
     // Formatear datetime.
@@ -300,13 +315,16 @@ public class Weather {
       return "ERROR";
     }
   }
-  
-  
-  // Pedir al servidor una solicitud.
-  // @address url de requisito.
-  // @method si es GET o POST.
-  // @parameters es el query.
-  // Retorna la respuesta del servidor.
+
+
+  /**
+   * Pedir al servidor una solicitud.
+   * @param  address    URL de requisito.
+   * @param  method     Si es GET o POST.
+   * @param  parameters Es el query.
+   * @param  comments   Comentarios de logging. Esto no se envía.
+   * @return            Retorna la respuesta del servidor.
+   */
   public static String request(String address, String method, String parameters, String comments) {
 
     URL url;
